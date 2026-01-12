@@ -20,7 +20,7 @@ TABLE_SCHEMAS = {
     'zpd_shar_rule': ['Rule', 'PrdCat', 'Cat Type', 'Dsgn Bldr Scrpt Prcs'],
 }
 
-OPTIONAL_TABLES = ['zpd_function_rule', 'zpd_shar_rule']
+OPTIONAL_TABLES = ['zpd_function_rule', 'zpd_shar_rule', 'zpd_slrule_opt', 'zpd_slrule_val']
 
 @st.cache_data
 def load_table(table_name: str) -> Optional[pd.DataFrame]:
