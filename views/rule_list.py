@@ -14,14 +14,17 @@ def render_rule_list(tables: Dict[str, pd.DataFrame]):
     
     # Get rules with statistics
     rules_df = get_rules_with_stats(tables)
-    
+
     if len(rules_df) == 0:
         st.warning("No rules found")
         return
-    
+
+    # Parse RULE_TYPE from Rule column (first 2 chars of rule ID)
+    rules_df['RULE_TYPE'] = rules_df['Rule'].str[:2]
+
     # Filters
     col1, col2, col3 = st.columns(3)
-    
+
     with col1:
         rule_types = ['All'] + sorted(rules_df['RULE_TYPE'].unique().tolist())
         selected_type = st.selectbox("Filter by Type", rule_types)
@@ -40,16 +43,16 @@ def render_rule_list(tables: Dict[str, pd.DataFrame]):
     
     if search_term:
         mask = (
-            filtered_df['RULE_ID'].str.contains(search_term, case=False, na=False) |
-            filtered_df['RULE_NAME'].str.contains(search_term, case=False, na=False)
+            filtered_df['Rule'].str.contains(search_term, case=False, na=False) |
+            filtered_df['Dsgn Bldr Scrpt Prcs'].str.contains(search_term, case=False, na=False)
         )
         filtered_df = filtered_df[mask]
-    
+
     # Sort
     if sort_by == "Sequence":
-        filtered_df = filtered_df.sort_values('PROCESS_SEQ_FRM')
+        filtered_df = filtered_df.sort_values('Processing Sequence')
     elif sort_by == "Rule Name":
-        filtered_df = filtered_df.sort_values('RULE_NAME')
+        filtered_df = filtered_df.sort_values('Dsgn Bldr Scrpt Prcs')
     else:
         filtered_df = filtered_df.sort_values('RULE_TYPE')
     
@@ -66,10 +69,10 @@ def render_rule_list(tables: Dict[str, pd.DataFrame]):
     
     # Prepare display dataframe
     display_df = filtered_df[[
-        'PROCESS_SEQ_FRM', 'RULE_ID', 'RULE_TYPE', 'RULE_NAME', 
+        'Processing Sequence', 'Rule', 'RULE_TYPE', 'Dsgn Bldr Scrpt Prcs',
         'condition_count', 'output_count'
     ]].copy()
-    
+
     display_df['RULE_TYPE'] = display_df['RULE_TYPE'].map(type_labels)
     
     display_df.columns = [
@@ -99,11 +102,11 @@ def render_rule_list(tables: Dict[str, pd.DataFrame]):
     # Rule selection for detail view
     st.divider()
     
-    rule_ids = filtered_df['RULE_ID'].tolist()
+    rule_ids = filtered_df['Rule'].tolist()
     selected_rule = st.selectbox(
         "Select a rule to view details:",
         rule_ids,
-        format_func=lambda x: f"{x} - {filtered_df[filtered_df['RULE_ID']==x].iloc[0]['RULE_NAME']}"
+        format_func=lambda x: f"{x} - {filtered_df[filtered_df['Rule']==x].iloc[0]['Dsgn Bldr Scrpt Prcs']}"
     )
     
     if st.button("View Rule Details", use_container_width=True):

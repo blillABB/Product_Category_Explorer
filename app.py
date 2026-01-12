@@ -86,9 +86,9 @@ def main():
     with st.sidebar.expander("📊 Data Info"):
         if 'zpd_prd_categ' in tables and len(tables['zpd_prd_categ']) > 0:
             cat_info = tables['zpd_prd_categ'].iloc[0]
-            st.markdown(f"**Category:** {cat_info['PROD_CATEG']}")
-            st.markdown(f"**Type:** {cat_info['PROD_CATEG_TYPE']}")
-            st.markdown(f"**Dataset:** {cat_info['DATA_SET']}")
+            st.markdown(f"**Category:** {cat_info['PrdCat']}")
+            st.markdown(f"**Type:** {cat_info['Cat Type']}")
+            st.markdown(f"**Dataset:** {cat_info['DS']}")
         
         if 'zpd_script_dtl' in tables:
             st.markdown(f"**Rules:** {len(tables['zpd_script_dtl'])}")

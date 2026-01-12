@@ -26,23 +26,26 @@ def render_rule_detail(tables: Dict[str, pd.DataFrame], rule_id: str):
     st.divider()
     
     # Header
-    st.title(f"🔍 Rule Detail: {header['RULE_ID']}")
-    
+    st.title(f"🔍 Rule Detail: {header['Rule']}")
+
+    # Parse RULE_TYPE from Rule column (first 2 chars of rule ID)
+    header['RULE_TYPE'] = header['Rule'][:2]
+
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Sequence", header['PROCESS_SEQ_FRM'])
+        st.metric("Sequence", header['Processing Sequence'])
     with col2:
         type_labels = {'01': 'Selection', '02': 'Sub-Process', '03': 'Function', '04': 'Classification'}
         st.metric("Type", type_labels.get(header['RULE_TYPE'], header['RULE_TYPE']))
     with col3:
-        st.metric("Rule ID", header['RULE_ID'])
-    
-    st.subheader(header['RULE_NAME'])
+        st.metric("Rule ID", header['Rule'])
+
+    st.subheader(header['Dsgn Bldr Scrpt Prcs'])
     if header.get('RULE_DESC'):
         st.caption(header['RULE_DESC'])
-    
+
     st.divider()
-    
+
     # Rule-type specific rendering
     if header['RULE_TYPE'] == '01':
         render_selection_rule(details)
@@ -61,7 +64,7 @@ def render_selection_rule(details: Dict):
     st.subheader("📥 Input Variables")
     if details['inputs']:
         inputs_df = pd.DataFrame(details['inputs'])
-        inputs_df = inputs_df[['SEQ_NO', 'CHARACT', 'MULTIPLES', 'RANGE']].sort_values('SEQ_NO')
+        inputs_df = inputs_df[['No.', 'Char. Name', 'Checkbox.2', 'Checkbox.1']].sort_values('No.')
         inputs_df.columns = ['Seq', 'Variable', 'Multiples', 'Range']
         st.dataframe(inputs_df, use_container_width=True, hide_index=True)
     else:
@@ -71,32 +74,32 @@ def render_selection_rule(details: Dict):
     st.subheader("⚙️ Conditions")
     if details['conditions']:
         conditions_df = pd.DataFrame(details['conditions'])
-        
+
         # Group by row
-        for row_key in sorted(conditions_df['ROW_KEY'].unique()):
-            row_conds = conditions_df[conditions_df['ROW_KEY'] == row_key]
-            
-            with st.expander(f"Row {row_key}", expanded=(row_key == '0001')):
+        for row_key in sorted(conditions_df['Row'].unique()):
+            row_conds = conditions_df[conditions_df['Row'] == row_key]
+
+            with st.expander(f"Row {row_key}", expanded=(row_key == '0001' or row_key == 1)):
                 condition_text = []
                 for _, cond in row_conds.iterrows():
-                    var = cond['CHARACT']
-                    op = cond['OPERATOR']
-                    
+                    var = cond['Char. Name']
+                    op = cond['Op']
+
                     # Get value
-                    if pd.notna(cond.get('CHAR_VALUE')):
-                        val = cond['CHAR_VALUE']
-                    elif pd.notna(cond.get('NUM_VAL_FROM')):
-                        if pd.notna(cond.get('NUM_VAL_TO')):
-                            val = f"{cond['NUM_VAL_FROM']} to {cond['NUM_VAL_TO']}"
+                    if pd.notna(cond.get('Characteristic Value')):
+                        val = cond['Characteristic Value']
+                    elif pd.notna(cond.get('Charactristic Numeric Value')):
+                        if pd.notna(cond.get('Charactristic Numeric Value.1')):
+                            val = f"{cond['Charactristic Numeric Value']} to {cond['Charactristic Numeric Value.1']}"
                         else:
-                            val = cond['NUM_VAL_FROM']
+                            val = cond['Charactristic Numeric Value']
                     else:
                         val = "(empty)"
-                    
+
                     connector = cond.get('CONNECTOR', '')
-                    
+
                     condition_text.append(f"**{var}** {op} `{val}` {connector}")
-                
+
                 st.markdown(" ".join(condition_text))
     else:
         st.info("No conditions defined")
@@ -105,29 +108,29 @@ def render_selection_rule(details: Dict):
     st.subheader("📤 Output Variables & Values")
     if details['outputs']:
         outputs_df = pd.DataFrame(details['outputs'])
-        
+
         for _, output in outputs_df.iterrows():
-            field_name = output['CHARACT']
-            
+            field_name = output['Char. Name']
+
             with st.expander(f"🎯 {field_name}", expanded=True):
                 # Get values for this output
                 if details['values']:
                     values_df = pd.DataFrame(details['values'])
-                    field_values = values_df[values_df['CHARACT'] == field_name]
-                    
+                    field_values = values_df[values_df['Char. Name'] == field_name]
+
                     if len(field_values) > 0:
-                        for row_key in sorted(field_values['ROW_KEY'].unique()):
-                            row_vals = field_values[field_values['ROW_KEY'] == row_key]
-                            
+                        for row_key in sorted(field_values['Row'].unique()):
+                            row_vals = field_values[field_values['Row'] == row_key]
+
                             for _, val in row_vals.iterrows():
-                                if pd.notna(val.get('CHAR_VALUE')):
-                                    value_display = val['CHAR_VALUE']
-                                elif pd.notna(val.get('NUM_VAL')):
-                                    value_display = val['NUM_VAL']
+                                if pd.notna(val.get('Characteristic Value')):
+                                    value_display = val['Characteristic Value']
+                                elif pd.notna(val.get('Val from')):
+                                    value_display = val['Val from']
                                 else:
                                     value_display = "(empty)"
-                                
-                                if row_key == '0000':
+
+                                if row_key == '0000' or row_key == 0:
                                     st.markdown(f"**Default:** `{value_display}`")
                                 else:
                                     st.markdown(f"**Row {row_key}:** `{value_display}`")
@@ -142,10 +145,10 @@ def render_selection_rule(details: Dict):
     if details['transactions']:
         st.subheader("💼 Transactions")
         trans_df = pd.DataFrame(details['transactions'])
-        
-        for row_key in sorted(trans_df['ROW_KEY'].unique()):
-            row_trans = trans_df[trans_df['ROW_KEY'] == row_key]
-            
+
+        for row_key in sorted(trans_df['Row'].unique()):
+            row_trans = trans_df[trans_df['Row'] == row_key]
+
             with st.expander(f"Row {row_key} Transactions ({len(row_trans)} items)"):
                 display_trans = row_trans[[
                     'ACTION_CODE', 'OBJECT_TYP', 'OBJECT_KEY', 'OBJ_DATA', 'COMP_QTY', 'COMP_UNIT'
@@ -161,11 +164,11 @@ def render_subprocess_rule(details: Dict):
     
     if details['subprocesses']:
         subproc_df = pd.DataFrame(details['subprocesses'])
-        
+
         for _, subproc in subproc_df.iterrows():
-            st.info(f"📦 Calls: **{subproc['PROD_CATEG']}** ({subproc['PROD_CATEG_TYPE']})")
-            if subproc.get('PROCESS_NAME'):
-                st.caption(f"Process: {subproc['PROCESS_NAME']}")
+            st.info(f"📦 Calls: **{subproc['PrdCat']}** ({subproc['Cat Type']})")
+            if subproc.get('Dsgn Bldr Scrpt Prcs'):
+                st.caption(f"Process: {subproc['Dsgn Bldr Scrpt Prcs']}")
     else:
         st.warning("No sub-processes defined")
 

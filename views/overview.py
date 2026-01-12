@@ -21,14 +21,14 @@ def render_overview(tables: Dict[str, pd.DataFrame]):
     # Header info
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Category", cat_info['PROD_CATEG'])
+        st.metric("Category", cat_info['PrdCat'])
     with col2:
-        st.metric("Type", cat_info['PROD_CATEG_TYPE'])
+        st.metric("Type", cat_info['Cat Type'])
     with col3:
-        st.metric("Dataset", cat_info['DATA_SET'])
+        st.metric("Dataset", cat_info['DS'])
     with col4:
-        if 'VERSION' in cat_info:
-            st.metric("Version", cat_info['VERSION'])
+        if 'Ver. No.' in cat_info:
+            st.metric("Version", cat_info['Ver. No.'])
     
     st.divider()
     
@@ -47,8 +47,8 @@ def render_overview(tables: Dict[str, pd.DataFrame]):
         st.metric("Total Rules", len(rules))
     
     with col2:
-        seq_min = rules['PROCESS_SEQ_FRM'].min()
-        seq_max = rules['PROCESS_SEQ_FRM'].max()
+        seq_min = rules['Processing Sequence'].min()
+        seq_max = rules['Processing Sequence'].max()
         st.metric("Sequence Range", f"{seq_min} - {seq_max}")
     
     with col3:
@@ -60,7 +60,7 @@ def render_overview(tables: Dict[str, pd.DataFrame]):
     
     with col4:
         if 'zpd_slrule_def' in tables:
-            unique_fields = tables['zpd_slrule_def']['CHARACT'].nunique()
+            unique_fields = tables['zpd_slrule_def']['Char. Name'].nunique()
             st.metric("Unique Fields", unique_fields)
         else:
             st.metric("Unique Fields", "N/A")
@@ -75,6 +75,8 @@ def render_overview(tables: Dict[str, pd.DataFrame]):
         '04': 'Classification'
     }
     
+    # Parse RULE_TYPE from Rule column (first 2 chars of rule ID)
+    rules['RULE_TYPE'] = rules['Rule'].str[:2]
     type_counts = rules['RULE_TYPE'].value_counts().sort_index()
     
     col1, col2, col3, col4 = st.columns(4)

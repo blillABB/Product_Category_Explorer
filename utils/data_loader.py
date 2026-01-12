@@ -9,15 +9,15 @@ from typing import Dict, Optional
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
 
-# Define expected files and their key columns
+# Define expected files and their key columns (using actual XLSX column names)
 TABLE_SCHEMAS = {
-    'zpd_prd_categ': ['PROD_CATEG', 'PROD_CATEG_TYPE', 'DATA_SET'],
-    'zpd_script_dtl': ['RULE_ID', 'PROCESS_SEQ_FRM', 'RULE_TYPE', 'RULE_NAME', 'PROD_CATEG', 'DATA_SET', 'VERSION'],
-    'zpd_script_con': ['RULE_FRM', 'CHARACT', 'OPERATOR', 'ROW_KEY'],
-    'zpd_slrule_def': ['RULE_ID', 'CHARACT', 'IN_OUT', 'SEQ_NO'],
-    'zpd_slrule_val': ['RULE_ID', 'ROW_KEY', 'CHARACT', 'CHAR_VALUE', 'NUM_VAL'],
-    'zpd_slrule_opt': ['RULE_ID', 'ROW_KEY', 'ACTION_CODE', 'OBJECT_TYP', 'OBJ_DATA'],
-    'zpd_shar_rule': ['RULE_ID', 'PROD_CATEG', 'PROD_CATEG_TYPE', 'PROCESS_NAME'],
+    'zpd_prd_categ': ['PrdCat', 'Cat Type', 'DS'],
+    'zpd_script_dtl': ['Rule', 'Processing Sequence', 'Dsgn Bldr Scrpt Prcs', 'PrdCat', 'DS', 'Ver. No.'],
+    'zpd_script_con': ['Rule', 'Char. Name', 'Op', 'Row'],
+    'zpd_slrule_def': ['Rule', 'Char. Name', 'Character Length 1', 'No.'],
+    'zpd_slrule_val': ['Rule', 'Row', 'Char. Name', 'Characteristic Value', 'Val from'],
+    'zpd_slrule_opt': ['Rule', 'Row', 'ACTION_CODE', 'OBJECT_TYP', 'OBJ_DATA'],
+    'zpd_shar_rule': ['Rule', 'PrdCat', 'Cat Type', 'Dsgn Bldr Scrpt Prcs'],
 }
 
 OPTIONAL_TABLES = ['zpd_function_rule', 'zpd_shar_rule']
@@ -104,9 +104,9 @@ def get_category_info(tables: Dict[str, pd.DataFrame],
         return None
     
     df = tables['zpd_prd_categ']
-    
+
     if prod_categ:
-        filtered = df[df['PROD_CATEG'] == prod_categ]
+        filtered = df[df['PrdCat'] == prod_categ]
         if len(filtered) == 0:
             return None
         return filtered.iloc[0]
