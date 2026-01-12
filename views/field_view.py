@@ -125,6 +125,17 @@ def render_field_details(tables: Dict[str, pd.DataFrame], field_name: str):
                 if rule.get('RULE_DESC'):
                     st.markdown(f"**Description:** {rule['RULE_DESC']}")
 
+                # Show input variables (what this rule depends on)
+                if 'zpd_slrule_def' in tables:
+                    inputs = tables['zpd_slrule_def'][
+                        (tables['zpd_slrule_def']['Rule'] == rule['Rule']) &
+                        (tables['zpd_slrule_def']['Character Length 1'] == 'I')
+                    ]
+                    if len(inputs) > 0:
+                        st.markdown("**Inputs (depends on):**")
+                        input_vars = inputs['Char. Name'].tolist()
+                        st.markdown(f"- {', '.join(input_vars)}")
+
                 # Show values set (if available)
                 if 'values_set' in rule.index and pd.notna(rule['values_set']):
                     st.markdown("**Values Set:**")
