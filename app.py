@@ -57,9 +57,13 @@ def main():
         """)
         st.stop()
     
+    # Welcome header
+    st.title("Hi, Innovation User Group! 👋")
+    st.markdown("---")
+
     # Success message
     st.sidebar.success(f"✅ Loaded {len(tables)} tables")
-    
+
     # Navigation
     st.sidebar.title("📦 Navigation")
     
